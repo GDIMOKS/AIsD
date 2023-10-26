@@ -6,7 +6,7 @@
 			[
 				{
 					"build" : ".",
-					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
 					"minimumCMakeVersion" : 
 					{
 						"string" : "3.26"
@@ -39,7 +39,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "AIsD::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-AIsD-Debug-f6a4556626334ed6d68c.json",
+					"jsonFile" : "target-AIsD-Debug-f01b8a58c2c32ce7ac21.json",
 					"name" : "AIsD",
 					"projectIndex" : 0
 				}
@@ -49,8 +49,8 @@
 	"kind" : "codemodel",
 	"paths" : 
 	{
-		"build" : "C:/Users/DIMOK/Desktop/ClionProjects/AIsD/cmake-build-debug",
-		"source" : "C:/Users/DIMOK/Desktop/ClionProjects/AIsD"
+		"build" : "/home/dmitriy/Desktop/ClionProjects/AIsD/cmake-build-debug",
+		"source" : "/home/dmitriy/Desktop/ClionProjects/AIsD"
 	},
 	"version" : 
 	{
