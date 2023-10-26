@@ -1,156 +1,157 @@
 //#include <iostream>
 //
-//struct Node {
-//    int data;
-//    Node * parent;
-//    Node * leftChild;
-//    Node * rightChild;
-//    Node * next;
-//    Node * prev;
+//struct Heap {
+//    int size;
+//    int maxSize;
+//    int * values;
 //
-//    Node() {
-//        parent = leftChild = rightChild = next = prev = nullptr;
-//    }
-//    Node(int _data) : Node() {
-//        data = _data;
-//    }
-//    Node(Node* _prev, int _data) : Node(_data) {
-//        prev = _prev;
+//    Heap() {
+//        size = 0;
+//        maxSize = 20;
+//        values = new int[maxSize];
 //    }
 //
-//};
-//
-//struct HeapCool {
-//    Node * root;
-//    Node * last;
-//
-//    HeapCool() {
-//        root =
-//        last = nullptr;
-//    }
-//
-//    void print() {
-//        Node * node = root;
-//        while (node != nullptr) {
-//            std::cout << node->data << " ";
-//            node = node->next;
+//    void addValues() {
+//        int * tempValues;
+//        maxSize *= 5;
+//        tempValues = new int[maxSize];
+//        for (int i = 0; i < size; i ++) {
+//            tempValues[i] = values[i];
 //        }
-//        std::cout << "\n";
+//        if (size != 0)
+//            delete [] values;
+//        values = tempValues;
 //    }
-//
-//    void siftUp(Node * currentNode) {
-//        Node * node = currentNode;
-//        while(node->parent != nullptr) {
-//            if (node->data >= node->parent->data)
-//                break;
-//            std::swap(node->data, node->parent->data);
-//            node = node->parent;
+//    void siftUp(int index) {
+//        while(values[index] < values[(index-1)/2]) {
+//            std::swap(values[index], values[(index-1)/2]);
+//            index = (index-1)/2;
 //        }
 //    }
 //
-//    void siftDown(Node * currentNode) {
-//        Node * node = currentNode;
+//    void siftDown(int index, int _size, bool mode = true) {
+//        int j = index;
+//        int left = 2*index+1;
+//        int right = 2*index+2;
 //
-//        if (currentNode->leftChild != nullptr && node->data > currentNode->leftChild->data) {
-//            node = currentNode->leftChild;
-//        }
-//        if (currentNode->rightChild != nullptr && node->data > currentNode->rightChild->data) {
-//            node = currentNode->rightChild;
+//        if (mode) {
+//            if (left < _size && values[j] > values[left]) {
+//                j = left;
+//            }
+//            if (right < _size && values[j] > values[right]) {
+//                j = right;
+//            }
+//        } else {
+//            if (left < _size && values[j] < values[left]) {
+//                j = left;
+//            }
+//            if (right < _size && values[j] < values[right]) {
+//                j = right;
+//            }
 //        }
 //
-//        if (node != currentNode) {
-//            std::swap(node->data, currentNode->data);
-//            siftDown(node);
+//        if (index != j) {
+//            std::swap(values[index], values[j]);
+//            siftDown(j, _size, mode);
 //        }
 //    }
 //
 //    int extractMin() {
-//        if (root == nullptr) {
+//        if (size == 0)
 //            return 1000000001;
-//        }
-//        int min = root->data;
-//        if (root == last) {
-//            last = root = nullptr;
-//            return  min;
-//        }
-//        root->data = last->data;
-//        if (last->parent->rightChild != nullptr)
-//            last->parent->rightChild = nullptr;
-//        else
-//            last->parent->leftChild = nullptr;
-//
-//
-//        last = last->prev;
-//
-//        last->next = nullptr;
-//        if (last == nullptr)
-//            root = last;
-//
-//        siftDown(root);
-//
+//        int min = values[0];
+//        values[0] = values[size-1];
+//        size--;
+//        siftDown(0, size);
 //        return min;
 //    }
-//
 //    void insert(int value) {
-//        if (root == nullptr) {
-//            root = new Node(value);
-//            last = root;
-//            return;
+//        if (size >= maxSize)
+//            addValues();
+//        values[size] = value;
+//        size++;
+//        if (size != 1)
+//            siftUp(size-1);
+//    }
+//    void merge(Heap *heap1, Heap *heap2) {
+//        for (int i = 0; i < heap1->size; i++) {
+//            insert(heap1->values[i]);
 //        }
+//        for (int i = 0, j = size; i < heap2->size; i++) {
+//            insert(heap2->values[i]);
 //
-//        Node * node = root;
-//        last->next = new Node(last, value);
-//        last = last->next;
-//
-//        while (node->leftChild != nullptr && node->rightChild != nullptr) {
-//            node = node->next;
 //        }
-//
-//        if (node->leftChild == nullptr)
-//            node->leftChild = last;
-//        else
-//            node->rightChild = last;
-//
-//        last->parent = node;
-//        siftUp(last);
 //
 //    }
 //
-//    void merge(HeapCool *heap1, HeapCool *heap2) {
-//        Node * node = heap1->root;
-////        Queue * queue = new Queue();
-//        while (node != nullptr) {
-//            insert(node->data);
-////            queue->enqueue(node->data);
-//            node = node->next;
+//    int search(int xValue, int index) {
+//        int j = index;
+//
+//        if (index < size && values[j] == xValue)
+//            return j;
+//
+//        int left = 2*index+1;
+//        int right = 2*index+2;
+//
+//        if (left < size && values[left] == xValue)
+//            j = left;
+//        else if (right < size && values[right] == xValue)
+//            j = right;
+//
+//        if (j != index)
+//            return j;
+//
+//
+//        j = -1;
+//        if (values[left] < xValue) {
+//            j = search(xValue, left);
 //        }
-//        node = heap2->root;
-//        while (node != nullptr) {
-////            queue->enqueue(node->data);
-//            insert(node->data);
-//            node = node->next;
+//
+//        if (j == -1)
+//            if (values[right] < xValue) {
+//                j = search(xValue, right);
+//            }
+//        return j;
+//    }
+//    void decreaseKey(int xValue, int yValue) {
+//        for (int i = 0; i < size; i++) {
+//            if (values[i] == xValue) {
+//                values[i] = yValue;
+//                siftUp(i);
+//                break;
+//            }
 //        }
-////        node = root;
-////        while (node->leftChild != nullptr && node->rightChild != nullptr) {
-////            node = node->next;
-////        }
-////        queue->print();
 //    }
 //
-//    void decreaseKey(int xIndex, int yValue) {
-//        Node * node = root;
-//        for (int i = 0; i < xIndex; i++) {
-//            node = node->next;
+//    void heapSort(bool mode = true) {
+//        for (int i = size/2-1; i >= 0; i--) {
+//            siftDown(i, size, mode);
 //        }
-//        node->data = yValue;
-//        siftUp(node);
+//
+//        for (int i = size-1; i >= 0; i--) {
+//            std::swap(values[0], values[i]);
+//            siftDown( 0,i, mode);
+//        }
+//    }
+//
+//    void correctHeap() {
+//        for (int i = size/2 - 1; i >= 0; i--) {
+//            siftDown(i, size);
+//        }
+//    }
+//
+//    void print() {
+//        for (int i = 0; i < size; i++) {
+//            std::cout << values[i] << " ";
+//        }
+//        std::cout << "\n";
 //    }
 //};
 //
-//void addHeaps(HeapCool *&heaps, int &maxSize, int size) {
-//    HeapCool * tempHeaps;
+//void addHeaps(Heap *&heaps, int &maxSize, int size) {
+//    Heap * tempHeaps;
 //    maxSize *= 5;
-//    tempHeaps = new HeapCool[maxSize];
+//    tempHeaps = new Heap[maxSize];
 //    for (int i = 0; i < size; i ++) {
 //        tempHeaps[i] = heaps[i];
 //    }
@@ -160,13 +161,13 @@
 //}
 //
 //int main() {
-////    std::ios::sync_with_stdio(false);
-////    std::cin.tie(nullptr);
+//    std::ios::sync_with_stdio(false);
+//    std::cin.tie(nullptr);
 //
 //
 //    std::string command;
-//    int maxSize = 64;
-//    HeapCool * heaps = new HeapCool[maxSize];
+//    int maxSize = 20;
+//    Heap * heaps = new Heap[maxSize];
 //    int count = 0;
 //
 //    while(std::cin >> command){
@@ -177,13 +178,12 @@
 //                if (count >= maxSize)
 //                    addHeaps(heaps, maxSize, count);
 //
-//                heaps[count] = HeapCool();
+//                heaps[count] = Heap();
 //                count++;
 //                break;
 //            case 'i':
 //                std::cin >> k >> x;
 //                heaps[k].insert(x);
-////                heaps[k].print();
 //                break;
 //            case 'e':
 //                std::cin >> k;
@@ -194,22 +194,21 @@
 //                else
 //                    std::cout << result << "\n";
 //
-////                heaps[k].print();
-//
 //                break;
 //            case 'm':
 //                std::cin >> k >> m;
-//                addHeaps(heaps, maxSize, count);
-//                heaps[count] = HeapCool();
+//                if (count >= maxSize)
+//                    addHeaps(heaps, maxSize, count);
+//                heaps[count] = Heap();
 //                heaps[count].merge(&heaps[k], &heaps[m]);
-////                heaps[count].print();
+//
 //                count++;
 //
 //                break;
 //            case 'd':
 //                std::cin >> k >> x >> y;
-//                heaps[k].decreaseKey(x-1,y);
-////                heaps[k].print();
+//                heaps[k].decreaseKey(x,y);
+//
 //                break;
 //        }
 //
@@ -220,4 +219,3 @@
 //
 //    return 0;
 //}
-//
