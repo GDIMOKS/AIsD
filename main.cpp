@@ -1,226 +1,191 @@
 #include <iostream>
 
-struct Heap {
-    int size;
-    int maxSize;
-    int * values;
-
-    Heap() {
-        size = 0;
-        maxSize = 20;
-        values = new int[maxSize];
-    }
-    ~Heap() {
-        delete [] values;
-    }
-
-    void addValues() {
-        int * tempValues;
-        maxSize *= 5;
-        tempValues = new int[maxSize];
-        for (int i = 0; i < size; i ++) {
-            tempValues[i] = values[i];
-        }
-        if (size != 0)
-            delete [] values;
-        values = tempValues;
-    }
-
-    void siftUp(int index) {
-        while(values[index] < values[(index-1)/2]) {
-            std::swap(values[index], values[(index-1)/2]);
-            index = (index-1)/2;
-        }
-    }
-
-    void siftDown(int index, int _size, bool mode = true) {
-        int j = index;
-        int left = 2*index+1;
-        int right = 2*index+2;
-
-        if (mode) {
-            if (left < _size && values[j] > values[left]) {
-                j = left;
-            }
-            if (right < _size && values[j] > values[right]) {
-                j = right;
-            }
-        } else {
-            if (left < _size && values[j] < values[left]) {
-                j = left;
-            }
-            if (right < _size && values[j] < values[right]) {
-                j = right;
-            }
-        }
-
-        if (index != j) {
-            std::swap(values[index], values[j]);
-            siftDown(j, _size, mode);
-        }
-    }
-
-    int extractMin() {
-        if (size == 0)
-            return 1000000001;
-        int min = values[0];
-        values[0] = values[size-1];
-        size--;
-        siftDown(0, size);
-        return min;
-    }
-
-    void insert(int value) {
-        if (size >= maxSize)
-            addValues();
-        values[size] = value;
-        size++;
-        if (size != 1)
-            siftUp(size-1);
-    }
-
-    void merge(Heap *heap1, Heap *heap2) {
-        for (int i = 0; i < heap1->size; i++) {
-            insert(heap1->values[i]);
-        }
-        for (int i = 0, j = size; i < heap2->size; i++) {
-            insert(heap2->values[i]);
-        }
-
-    }
-
-    int search(int xValue, int index) {
-        int j = index;
-
-        if (index < size && values[j] == xValue)
-            return j;
-
-        int left = 2*index+1;
-        int right = 2*index+2;
-
-        if (left < size && values[left] == xValue)
-            j = left;
-        else if (right < size && values[right] == xValue)
-            j = right;
-
-        if (j != index)
-            return j;
-
-
-        j = -1;
-        if (values[left] < xValue) {
-            j = search(xValue, left);
-        }
-
-        if (j == -1)
-            if (values[right] < xValue) {
-                j = search(xValue, right);
-            }
-        return j;
-    }
-
-    void decreaseKey(int xValue, int yValue) {
-        for (int i = 0; i < size; i++) {
-            if (values[i] == xValue) {
-                values[i] = yValue;
-                siftUp(i);
-                break;
-            }
-        }
-    }
-
-    void heapSort(bool mode = true) {
-        for (int i = size/2-1; i >= 0; i--) {
-            siftDown(i, size, mode);
-        }
-
-        for (int i = size-1; i >= 0; i--) {
-            std::swap(values[0], values[i]);
-            siftDown( 0,i, mode);
-        }
-    }
-
-    void correctHeap() {
-        for (int i = size/2 - 1; i >= 0; i--) {
-            siftDown(i, size);
-        }
-    }
-
-    void print() {
-        for (int i = 0; i < size; i++) {
-            std::cout << values[i] << " ";
-        }
-        std::cout << "\n";
+class Data {
+public:
+    int value;
+    Data() {}
+    Data(int _value) : Data() {
+        value = _value;
     }
 };
 
-void addHeaps(Heap *&heaps, int &maxSize, int size) {
-    Heap * tempHeaps;
-    maxSize *= 5;
-    tempHeaps = new Heap[maxSize];
-    for (int i = 0; i < size; i ++) {
-        tempHeaps[i] = heaps[i];
+class Node {
+public:
+    Data * data;
+
+    Node * parent;
+    Node * left;
+    Node * right;
+
+    Node() {
+        data = nullptr;
+        parent = left = right = nullptr;
     }
-    if (maxSize != 0)
-        delete [] heaps;
-    heaps = tempHeaps;
-}
+    Node(Data * _data) : Node() {
+        data = _data;
+    }
+};
+
+class Tree {
+public:
+    Node * root;
+
+    Node* search(Node * currentNode, int value) {
+        if (currentNode == nullptr || value == currentNode->data->value)
+            return currentNode;
+        if (value < currentNode->data->value)
+            return search(currentNode->left, value);
+        if (value > currentNode->data->value)
+            return search(currentNode->right, value);
+    }
+
+    Node* prev(Node * currentNode) {
+
+        if (currentNode->left != nullptr) {
+            return maximum(currentNode->left);
+        }
+        Node * parentNode = currentNode->parent;
+
+        while (parentNode != nullptr && currentNode == parentNode->left) {
+            currentNode = parentNode;
+            parentNode = parentNode->parent;
+        }
+        return parentNode;
+    }
+
+    Node* next(Node * currentNode) {
+        if (currentNode->right != nullptr) {
+            return minimum(currentNode->right);
+        }
+        Node * parentNode = currentNode->parent;
+
+        while (parentNode != nullptr && currentNode == parentNode->right) {
+            currentNode = parentNode;
+            parentNode = parentNode->parent;
+        }
+        return parentNode;
+    }
+
+    Node* minimum(Node * currentNode) {
+        return (currentNode->left == nullptr) ? currentNode : minimum(currentNode->left);
+    }
+
+    Node* maximum(Node * currentNode) {
+        return (currentNode->right == nullptr) ? currentNode : maximum(currentNode->right);
+    }
+
+    Node* insert(Node * currentNode, int value) {
+        if (currentNode == nullptr)
+            return new Node(new Data(value));
+        else if (value > currentNode->data->value)
+            currentNode->right = insert(currentNode->left, value);
+        else if (value < currentNode->data->value)
+            currentNode->left = insert(currentNode->right, value);
+        return currentNode;
+    }
+
+    void insert(int value, Node * currentNode = nullptr) {
+        if (currentNode == nullptr)
+            currentNode = root;
+        while (currentNode != nullptr) {
+            if (value < currentNode->data->value) {
+                if (currentNode->left == nullptr) {
+                    Node * leftChild = new Node(new Data(value));
+                    leftChild->parent = currentNode;
+                    currentNode->left = leftChild;
+                    break;
+                } else
+                    currentNode = currentNode->left;
+            } else if (value > currentNode->data->value) {
+                if (currentNode->right == nullptr) {
+                    Node * rightChild = new Node(new Data(value));
+                    rightChild->parent = currentNode;
+                    currentNode->right = rightChild;
+                    break;
+                } else
+                    currentNode = currentNode->right;
+            }
+        }
+    }
+
+    void remove(Node * removableNode) {
+        Node * parentNode = removableNode->parent;
+
+        if (removableNode->left == nullptr && removableNode->right == nullptr) {
+            if (parentNode->left == removableNode)
+                parentNode->left = nullptr;
+            else if (parentNode->right == removableNode)
+                parentNode->right = nullptr;
+
+            delete removableNode;
+        } else if (removableNode->left == nullptr || removableNode->right == nullptr) {
+            if (removableNode->left == nullptr) {
+                if (parentNode->left == removableNode)
+                    parentNode->left = removableNode->right;
+                else if (parentNode->right == removableNode)
+                    parentNode->right = removableNode->right;
+
+                removableNode->right->parent = parentNode;
+
+                delete removableNode;
+            } else if (removableNode->right == nullptr) {
+                if (parentNode->left == removableNode)
+                    parentNode->left = removableNode->left;
+                else if (parentNode->right == removableNode)
+                    parentNode->right = removableNode->left;
+
+                removableNode->left->parent = parentNode;
+
+                delete removableNode;
+            }
+        } else if (removableNode->left != nullptr && removableNode->right != nullptr) {
+            Node * successor = next(removableNode);
+            removableNode->data->value = successor->data->value;
+
+            if (successor->parent->left == successor) {
+                successor->parent->left = successor->right;
+                if (successor->right != nullptr)
+                    successor->right->parent = successor->parent;
+            } else if (successor->parent->right == successor) {
+                successor->parent->right = successor->right;
+                if (successor->right != nullptr)
+                    successor->right->parent = successor->parent;
+            }
+
+            delete successor;
+        }
+    }
+
+    void inorderTrarersal(Node * node) {
+        if (node != nullptr) {
+            inorderTrarersal(node->left);
+            std::cout << node->data->value << " ";
+            inorderTrarersal(node->right);
+        }
+    }
+
+    void preorderTrarersal(Node * node) {
+        if (node != nullptr) {
+            std::cout << node->data->value << " ";
+            preorderTrarersal(node->left);
+            preorderTrarersal(node->right);
+        }
+    }
+
+    void postorderTrarersal(Node * node) {
+        if (node != nullptr) {
+            preorderTrarersal(node->left);
+            preorderTrarersal(node->right);
+            std::cout << node->data->value << " ";
+        }
+    }
+
+};
 
 int main() {
-    std::ios::sync_with_stdio(false);
-    std::cin.tie(nullptr);
+//    std::ios::sync_with_stdio(false);
+//    std::cin.tie(nullptr);
 
-
-    std::string command;
-    int maxSize = 20;
-    Heap * heaps = new Heap[maxSize];
-    int count = 0;
-
-    while(std::cin >> command) {
-        int x,y,k,m;
-
-        switch (command[0]) {
-            case 'c':
-                if (count >= maxSize)
-                    addHeaps(heaps, maxSize, count);
-
-                heaps[count] = Heap();
-                count++;
-                break;
-            case 'i':
-                std::cin >> k >> x;
-                heaps[k].insert(x);
-                break;
-            case 'e':
-                std::cin >> k;
-                int result;
-                result = heaps[k].extractMin();
-                if (result == 1000000001)
-                    std::cout << "*\n";
-                else
-                    std::cout << result << "\n";
-
-                break;
-            case 'm':
-                std::cin >> k >> m;
-                if (count >= maxSize)
-                    addHeaps(heaps, maxSize, count);
-                heaps[count] = Heap();
-                heaps[count].merge(&heaps[k], &heaps[m]);
-
-                count++;
-
-                break;
-            case 'd':
-                std::cin >> k >> x >> y;
-                heaps[k].decreaseKey(x,y);
-
-                break;
-        }
-
-    }
-
-    delete [] heaps;
 
 
     return 0;

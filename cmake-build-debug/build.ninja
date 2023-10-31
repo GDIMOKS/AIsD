@@ -79,6 +79,12 @@ build CMakeFiles/AIsD.dir/lab3/lab3.C.cpp.obj: CXX_COMPILER__AIsD_unscanned_Debu
   OBJECT_DIR = CMakeFiles\AIsD.dir
   OBJECT_FILE_DIR = CMakeFiles\AIsD.dir\lab3
 
+build CMakeFiles/AIsD.dir/lab4/lab4.A.cpp.obj: CXX_COMPILER__AIsD_unscanned_Debug C$:/Users/DIMOK/Desktop/ClionProjects/AIsD/lab4/lab4.A.cpp || cmake_object_order_depends_target_AIsD
+  DEP_FILE = CMakeFiles\AIsD.dir\lab4\lab4.A.cpp.obj.d
+  FLAGS = -g -fdiagnostics-color=always
+  OBJECT_DIR = CMakeFiles\AIsD.dir
+  OBJECT_FILE_DIR = CMakeFiles\AIsD.dir\lab4
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target AIsD
@@ -87,7 +93,7 @@ build CMakeFiles/AIsD.dir/lab3/lab3.C.cpp.obj: CXX_COMPILER__AIsD_unscanned_Debu
 #############################################
 # Link the executable AIsD.exe
 
-build AIsD.exe: CXX_EXECUTABLE_LINKER__AIsD_Debug CMakeFiles/AIsD.dir/main.cpp.obj CMakeFiles/AIsD.dir/lab3/lab3.A.cpp.obj CMakeFiles/AIsD.dir/lab3/lab3.B.cpp.obj CMakeFiles/AIsD.dir/lab3/lab3.E.cpp.obj CMakeFiles/AIsD.dir/lab3/lab3.C.cpp.obj
+build AIsD.exe: CXX_EXECUTABLE_LINKER__AIsD_Debug CMakeFiles/AIsD.dir/main.cpp.obj CMakeFiles/AIsD.dir/lab3/lab3.A.cpp.obj CMakeFiles/AIsD.dir/lab3/lab3.B.cpp.obj CMakeFiles/AIsD.dir/lab3/lab3.E.cpp.obj CMakeFiles/AIsD.dir/lab3/lab3.C.cpp.obj CMakeFiles/AIsD.dir/lab4/lab4.A.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\AIsD.dir
