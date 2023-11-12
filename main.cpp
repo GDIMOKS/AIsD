@@ -2,35 +2,60 @@
 
 class Data {
 public:
-    int value;
+    std::string value;
+    bool indexes[3]{};
+    int count;
     Data() {}
-    Data(int _value) : Data() {
+    Data(std::string _value, int index) : Data() {
         value = _value;
+        count = 1;
+        indexes[index] = true;
+    }
+
+    int getMark() {
+        switch (count) {
+            case 1:
+                return 3;
+            case 2:
+                return 1;
+            case 3:
+                return 0;
+        }
     }
 };
 
-class Node {
+template <typename T>
+class BasicNode {
 public:
     Data * data;
 
-    Node * parent;
-    Node * left;
-    Node * right;
+    T * parent;
+    T * left;
+    T * right;
 
-    Node() {
+    BasicNode() {
         data = nullptr;
         parent = left = right = nullptr;
     }
-    Node(Data * _data) : Node() {
+    BasicNode(Data * _data) : BasicNode() {
         data = _data;
     }
 };
+
+class Node : public BasicNode<Node> {
+public:
+    Node() : BasicNode<Node>() {
+    }
+    Node(Data * _data) : BasicNode<Node>(_data) {
+    }
+};
+
 
 class Tree {
 public:
     Node * root;
 
-    Node* search(Node * currentNode, int value) {
+    template <typename T> T* search(T * currentNode, std::string value) {
         if (currentNode == nullptr || value == currentNode->data->value)
             return currentNode;
         if (value < currentNode->data->value)
@@ -39,12 +64,13 @@ public:
             return search(currentNode->right, value);
     }
 
-    Node* prev(Node * currentNode) {
+    template <typename T> T* prev(T * currentNode) {
+        if (currentNode == nullptr) return nullptr;
 
         if (currentNode->left != nullptr) {
             return maximum(currentNode->left);
         }
-        Node * parentNode = currentNode->parent;
+        T * parentNode = currentNode->parent;
 
         while (parentNode != nullptr && currentNode == parentNode->left) {
             currentNode = parentNode;
@@ -53,11 +79,47 @@ public:
         return parentNode;
     }
 
-    Node* next(Node * currentNode) {
+    template<typename T> T* findNext(int value, T * currentNode) {
+        if (currentNode == nullptr) {
+            return nullptr;
+        }
+
+        if (currentNode->data->value > value) {
+            T * minNode = findNext(value, currentNode->left);
+            if (minNode != nullptr)
+                return minNode;
+            return currentNode;
+        }
+        if (currentNode->right != nullptr)
+            return findNext(value, currentNode->right);
+        else
+            return nullptr;
+
+    }
+
+    template<typename T> T* findPrev(int value, T* currentNode) {
+        if (currentNode == nullptr)
+            return nullptr;
+
+        if (currentNode->data->value < value) {
+            T * maxNode = findPrev(value,currentNode->right);
+            if (maxNode != nullptr)
+                return maxNode;
+            return currentNode;
+        }
+        if (currentNode->left != nullptr)
+            return findPrev(value, currentNode->left);
+        else
+            return nullptr;
+    }
+
+    template <typename T> T* next(T * currentNode) {
+        if (currentNode == nullptr) return nullptr;
+
         if (currentNode->right != nullptr) {
             return minimum(currentNode->right);
         }
-        Node * parentNode = currentNode->parent;
+        T * parentNode = currentNode->parent;
 
         while (parentNode != nullptr && currentNode == parentNode->right) {
             currentNode = parentNode;
@@ -66,127 +128,87 @@ public:
         return parentNode;
     }
 
-    Node* minimum(Node * currentNode) {
+    template <typename T> T* minimum(T * currentNode) {
         return (currentNode->left == nullptr) ? currentNode : minimum(currentNode->left);
     }
 
-    Node* maximum(Node * currentNode) {
+    template <typename T> T* maximum(T * currentNode) {
         return (currentNode->right == nullptr) ? currentNode : maximum(currentNode->right);
     }
 
-    Node* insert(Node * currentNode, int value) {
-        if (currentNode == nullptr)
-            return new Node(new Data(value));
-        else if (value > currentNode->data->value)
-            currentNode->right = insert(currentNode->left, value);
-        else if (value < currentNode->data->value)
-            currentNode->left = insert(currentNode->right, value);
-        return currentNode;
-    }
+    Node* insert(Node* node, std::string value, int index) {
+        if (node == nullptr)
+            return new Node(new Data(value, index));
 
-    void insert(int value, Node * currentNode = nullptr) {
-        if (currentNode == nullptr)
-            currentNode = root;
-        while (currentNode != nullptr) {
-            if (value < currentNode->data->value) {
-                if (currentNode->left == nullptr) {
-                    Node * leftChild = new Node(new Data(value));
-                    leftChild->parent = currentNode;
-                    currentNode->left = leftChild;
-                    break;
-                } else
-                    currentNode = currentNode->left;
-            } else if (value > currentNode->data->value) {
-                if (currentNode->right == nullptr) {
-                    Node * rightChild = new Node(new Data(value));
-                    rightChild->parent = currentNode;
-                    currentNode->right = rightChild;
-                    break;
-                } else
-                    currentNode = currentNode->right;
-            }
+        else if (value < node->data->value)
+            node->left = insert(node->left, value, index);
+        else if (value > node->data->value)
+            node->right = insert(node->right, value, index);
+        else if (value == node->data->value) {
+            node->data->count++;
+            node->data->indexes[index] = true;
         }
+        return node;
+
     }
 
-    void remove(Node * removableNode) {
-        Node * parentNode = removableNode->parent;
-
-        if (removableNode->left == nullptr && removableNode->right == nullptr) {
-            if (parentNode->left == removableNode)
-                parentNode->left = nullptr;
-            else if (parentNode->right == removableNode)
-                parentNode->right = nullptr;
-
-            delete removableNode;
-        } else if (removableNode->left == nullptr || removableNode->right == nullptr) {
-            if (removableNode->left == nullptr) {
-                if (parentNode->left == removableNode)
-                    parentNode->left = removableNode->right;
-                else if (parentNode->right == removableNode)
-                    parentNode->right = removableNode->right;
-
-                removableNode->right->parent = parentNode;
-
-                delete removableNode;
-            } else if (removableNode->right == nullptr) {
-                if (parentNode->left == removableNode)
-                    parentNode->left = removableNode->left;
-                else if (parentNode->right == removableNode)
-                    parentNode->right = removableNode->left;
-
-                removableNode->left->parent = parentNode;
-
-                delete removableNode;
-            }
-        } else if (removableNode->left != nullptr && removableNode->right != nullptr) {
-            Node * successor = next(removableNode);
-            removableNode->data->value = successor->data->value;
-
-            if (successor->parent->left == successor) {
-                successor->parent->left = successor->right;
-                if (successor->right != nullptr)
-                    successor->right->parent = successor->parent;
-            } else if (successor->parent->right == successor) {
-                successor->parent->right = successor->right;
-                if (successor->right != nullptr)
-                    successor->right->parent = successor->parent;
-            }
-
-            delete successor;
-        }
-    }
-
-    void inorderTrarersal(Node * node) {
+    template <typename T> void preorderTrarersal(T * node, int * persons) {
         if (node != nullptr) {
-            inorderTrarersal(node->left);
-            std::cout << node->data->value << " ";
-            inorderTrarersal(node->right);
+
+            for (int i = 0; i < 3; i++) {
+                if (node->data->indexes[i]) {
+                    persons[i] += node->data->getMark();
+                }
+            }
+            preorderTrarersal(node->left, persons);
+            preorderTrarersal(node->right, persons);
         }
     }
 
-    void preorderTrarersal(Node * node) {
-        if (node != nullptr) {
-            std::cout << node->data->value << " ";
-            preorderTrarersal(node->left);
-            preorderTrarersal(node->right);
-        }
-    }
 
-    void postorderTrarersal(Node * node) {
-        if (node != nullptr) {
-            preorderTrarersal(node->left);
-            preorderTrarersal(node->right);
-            std::cout << node->data->value << " ";
-        }
-    }
+    template <typename T> int heightOfTree(T * node) {
+        if (node == nullptr)
+            return 0;
 
+        int left, right;
+        if (node->left != nullptr)
+            left = heightOfTree(node->left);
+        else
+            left = 0;
+
+        if (node->right != nullptr)
+            right = heightOfTree(node->right);
+        else
+            right = 0;
+
+        return (left > right) ? left+1 : right+1;
+    }
 };
 
+
 int main() {
-//    std::ios::sync_with_stdio(false);
-//    std::cin.tie(nullptr);
+    int n;
 
+    std::cin >> n;
+    Tree * tree = new Tree();
 
+    for (int j = 0; j < 3; j++) {
+        for (int i = 0; i < n; i++) {
+            std::string file;
+            std::cin >> file;
+            tree->root = tree->insert(tree->root,file, j);
+        }
+    }
+    int persons[3] = {0};
+
+    tree->preorderTrarersal(tree->root, persons);
+
+    for (int i = 0; i < 3; i++) {
+        std::cout << persons[i] << " ";
+    }
+
+    std::cout << "\n";
+    delete tree;
 
     return 0;
 }

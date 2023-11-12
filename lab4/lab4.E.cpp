@@ -1,4 +1,5 @@
 //#include <iostream>
+//#include <sstream>
 //
 //class Data {
 //public:
@@ -47,7 +48,6 @@
 //        height = 1;
 //    }
 //};
-//
 //class Tree {
 //public:
 //    Node * root;
@@ -62,6 +62,7 @@
 //    }
 //
 //    template <typename T> T* prev(T * currentNode) {
+//        if (currentNode == nullptr) return nullptr;
 //
 //        if (currentNode->left != nullptr) {
 //            return maximum(currentNode->left);
@@ -75,7 +76,53 @@
 //        return parentNode;
 //    }
 //
+//    template<typename T> T* findNext(int value, T * currentNode) {
+//        if (currentNode == nullptr) {
+//            return nullptr;
+//        }
+//
+//        if (currentNode->data->value > value) {
+//            T * minNode = findNext(value, currentNode->left);
+//            if (minNode != nullptr)
+//                return minNode;
+//            return currentNode;
+//        }
+//        if (currentNode->right != nullptr)
+//            return findNext(value, currentNode->right);
+//        else
+//            return nullptr;
+//
+//    }
+//
+//    template<typename T> T* findPrev(int value, T* currentNode) {
+//        if (currentNode == nullptr)
+//            return nullptr;
+//
+//        if (currentNode->data->value < value) {
+//            T * maxNode = findPrev(value,currentNode->right);
+//            if (maxNode != nullptr)
+//                return maxNode;
+//            return currentNode;
+//        }
+//        if (currentNode->left != nullptr)
+//            return findPrev(value, currentNode->left);
+//        else
+//            return nullptr;
+//    }
+//    template <typename T> T* next (int value) {
+//        T * current = root, successor = nullptr;
+//        while (current != nullptr) {
+//            if (current->data->value > value) {
+//                successor = current;
+//                current = current->left;
+//            } else
+//                current = current->right;
+//        }
+//        return successor;
+//    }
 //    template <typename T> T* next(T * currentNode) {
+//        if (currentNode == nullptr) return nullptr;
+//
 //        if (currentNode->right != nullptr) {
 //            return minimum(currentNode->right);
 //        }
@@ -96,16 +143,6 @@
 //        return (currentNode->right == nullptr) ? currentNode : maximum(currentNode->right);
 //    }
 //
-//    Node* insert(Node * currentNode, int value) {
-//        if (currentNode == nullptr)
-//            return new Node(new Data(value));
-//        else if (value > currentNode->data->value)
-//            currentNode->right = insert(currentNode->left, value);
-//        else if (value < currentNode->data->value)
-//            currentNode->left = insert(currentNode->right, value);
-//        return currentNode;
-//    }
-//
 //    void insert(int value, Node * currentNode = nullptr) {
 //        if (root == nullptr) {
 //            root = new Node(new Data(value));
@@ -115,15 +152,7 @@
 //        if (currentNode == nullptr)
 //            currentNode = root;
 //        while (currentNode != nullptr) {
-//            if (value <= currentNode->data->value) {
-//                if (currentNode->left == nullptr) {
-//                    Node * leftChild = new Node(new Data(value));
-//                    leftChild->parent = currentNode;
-//                    currentNode->left = leftChild;
-//                    break;
-//                } else
-//                    currentNode = currentNode->left;
-//            } else if (value > currentNode->data->value) {
+//            if (value >= currentNode->data->value) {
 //                if (currentNode->right == nullptr) {
 //                    Node * rightChild = new Node(new Data(value));
 //                    rightChild->parent = currentNode;
@@ -131,6 +160,14 @@
 //                    break;
 //                } else
 //                    currentNode = currentNode->right;
+//            }else if (value <= currentNode->data->value) {
+//                if (currentNode->left == nullptr) {
+//                    Node * leftChild = new Node(new Data(value));
+//                    leftChild->parent = currentNode;
+//                    currentNode->left = leftChild;
+//                    break;
+//                } else
+//                    currentNode = currentNode->left;
 //            }
 //        }
 //    }
@@ -142,29 +179,48 @@
 //        Node * parentNode = removableNode->parent;
 //
 //        if (removableNode->left == nullptr && removableNode->right == nullptr) {
-//            if (parentNode->left == removableNode)
-//                parentNode->left = nullptr;
-//            else if (parentNode->right == removableNode)
-//                parentNode->right = nullptr;
+//
+//
+//            if (parentNode != nullptr) {
+//                if (parentNode->left == removableNode)
+//                    parentNode->left = nullptr;
+//                else if (parentNode->right == removableNode)
+//                    parentNode->right = nullptr;
+//            }
+//            if (removableNode == root)
+//                root = nullptr;
 //
 //            delete removableNode;
+//
 //        } else if (removableNode->left == nullptr || removableNode->right == nullptr) {
 //            if (removableNode->left == nullptr) {
-//                if (parentNode->left == removableNode)
-//                    parentNode->left = removableNode->right;
-//                else if (parentNode->right == removableNode)
-//                    parentNode->right = removableNode->right;
+//
+//                if (parentNode != nullptr) {
+//                    if (parentNode->left == removableNode)
+//                        parentNode->left = removableNode->right;
+//                    else if (parentNode->right == removableNode)
+//                        parentNode->right = removableNode->right;
+//                }
 //
 //                removableNode->right->parent = parentNode;
 //
+//                if (removableNode == root)
+//                    root = removableNode->right;
+//
 //                delete removableNode;
 //            } else if (removableNode->right == nullptr) {
-//                if (parentNode->left == removableNode)
-//                    parentNode->left = removableNode->left;
-//                else if (parentNode->right == removableNode)
-//                    parentNode->right = removableNode->left;
+//                if (parentNode != nullptr) {
+//
+//                    if (parentNode->left == removableNode)
+//                        parentNode->left = removableNode->left;
+//                    else if (parentNode->right == removableNode)
+//                        parentNode->right = removableNode->left;
+//                }
 //
 //                removableNode->left->parent = parentNode;
+//
+//                if (removableNode == root)
+//                    root = removableNode->left;
 //
 //                delete removableNode;
 //            }
@@ -186,28 +242,42 @@
 //        }
 //    }
 //
-//    template <typename T> void preorderTrarersal(T * node) {
+//    template <typename T> void preorderTrarersal(T * node, std::stringstream* ss) {
 //        if (node != nullptr) {
-//            std::cout << node->data->value << " ";
-//            preorderTrarersal(node->left);
-//            preorderTrarersal(node->right);
+////            std::cout << node->data->value << " ";
+//            if ((*ss).str().empty()) {
+//                *ss << node->data->value;
+//            } else
+//                *ss << " " << node->data->value;
+//
+//            preorderTrarersal(node->left, ss);
+//            preorderTrarersal(node->right, ss);
 //        }
 //    }
 //
-//    template <typename T> void inorderTrarersal(T * node) {
+//    template <typename T> void inorderTrarersal(T * node, std::stringstream* ss) {
 //        if (node != nullptr) {
-//            inorderTrarersal(node->left);
-//            std::cout << node->data->value << " ";
-//            inorderTrarersal(node->right);
+//            inorderTrarersal(node->left, ss);
+//            if ((*ss).str().empty()) {
+//                *ss << node->data->value;
+//            } else
+//                *ss << " " << node->data->value;
+////            std::cout << node->data->value << " ";
+//            inorderTrarersal(node->right, ss);
 //        }
 //    }
 //
-//    template <typename T> void postorderTrarersal(T * node) {
+//    template <typename T> void postorderTrarersal(T * node, std::stringstream* ss) {
 //        if (node != nullptr) {
-//            postorderTrarersal(node->left);
-//            postorderTrarersal(node->right);
-//            std::cout << node->data->value << " ";
+//            postorderTrarersal(node->left, ss);
+//            postorderTrarersal(node->right, ss);
+////            std::cout << node->data->value << " ";
+//            if ((*ss).str().empty()) {
+//                *ss << node->data->value;
+//            } else
+//                *ss << " " << node->data->value;
 //        }
+//
 //    }
 //
 //    template <typename T> int heightOfTree(T * node) {
@@ -228,7 +298,6 @@
 //        return (left > right) ? left+1 : right+1;
 //    }
 //};
-//
 //class AVLTree : public Tree {
 //public:
 //
@@ -389,39 +458,61 @@
 //    }
 //};
 //
-//AVLNode* sortedArrayToAvlTree(int * values, int begin, int end) {
-//    if (begin > end)
-//    {
-//        return nullptr;
-//    }
-//
-//    int middle = begin + (end - begin)/2;
-//    AVLNode * node = new AVLNode(new Data(values[middle]));
-//
-//    node->left = sortedArrayToAvlTree(values, begin, middle-1);
-//    node->right = sortedArrayToAvlTree(values, middle+1, end);
-//
-//    return node;
-//}
-//
 //int main() {
 //    std::ios::sync_with_stdio(false);
 //    std::cin.tie(nullptr);
 //
-//    AVLTree * avlTree = new AVLTree();
+//    Tree * tree = new Tree();
 //
 //    int n;
+//    bool isTree = true;
 //    std::cin >> n;
-//    int * values = new int[n];
+//    std::stringstream keys;
 //
-//    for (int i = 0; i < n; i++) {
-//        std::cin >> values[i];
+//    for (int i = 0; i < 3; i++) {
+//        keys.str(std::string());
+//
+//        for (int j = 0; j < n; j++) {
+//            int value;
+//            std::cin >> value;
+//            if (i == 0)
+//                tree->insert(value);
+//
+//            if (keys.str().empty())
+//                keys << value;
+//            else
+//                keys << " " << value ;
+//        }
+//
+//        std::stringstream keys2;
+//        if (i == 0) {
+//
+//            tree->preorderTrarersal(tree->root, &keys2);
+//            if (keys2.str() != keys.str())
+//                isTree = false;
+//        }
+//        else if (i == 1 && isTree) {
+//            tree->inorderTrarersal(tree->root, &keys2);
+//
+//            if (keys2.str() != keys.str())
+//                isTree = false;
+//        }
+//        else if (i == 2 && isTree) {
+//            tree->postorderTrarersal(tree->root, &keys2);
+//
+//            if (keys2.str() != keys.str())
+//                isTree = false;
+//        }
+//
 //    }
 //
-//    avlTree->root = sortedArrayToAvlTree(values, 0, n-1);
-//    avlTree->preorderTrarersal(avlTree->root);
+//    if (isTree)
+//        std::cout << "YES\n";
+//    else
+//        std::cout << "NO\n";
 //
-//    delete avlTree;
+//    delete tree;
 //
 //    return 0;
 //}
+//
