@@ -1,18 +1,31 @@
-/*
 #include <iostream>
 #include <vector>
-#include <cmath>
 
 class Data {
 public:
+    int key;
     int value;
-    int status; // 0 - пуст, 1 - занят, 2 - удален
 
-    Data() {
-        status = 0;
-    }
-    Data(int _value) : Data() {
+    Data(int _value) {
         value = _value;
+    }
+    Data(int _key, int _value) : Data(_value){
+        key = _key;
+    }
+};
+
+class Node {
+public:
+    Data * data;
+    Node * next;
+
+    Node() {
+        data = nullptr;
+        next = nullptr;
+    }
+
+    Node(Data * _data) : Node() {
+        data = _data;
     }
 };
 
@@ -20,165 +33,7 @@ class Hashtable {
 public:
     int size;
     int currentSize;
-    std::vector<Data> values;
-
-
-    Hashtable() {
-        currentSize = 0;
-    }
-    Hashtable(int _size) : Hashtable() {
-
-        int rank = std::ceil(log2(_size));
-        size = pow(2,rank);
-        values.resize(size);
-    }
-
-
-    void insert(int value) {
-        if (currentSize >= size)
-            return;
-
-        int index1 = getHash(value);
-        int index2 = getHash2(value);
-        int index = index1;
-        if (values[index1].value == value ||
-            values[index2].value == value)
-            return;
-
-
-        for (int i = 0; i < size; i++) {
-            if (values[index].status == 0) {
-                values[index].status = 1;
-                values[index].value = value;
-                currentSize++;
-                return;
-            }
-            index = (index1 + i*index2) % size;
-        }
-
-    }
-
-    int search(int value) {
-        if (currentSize <= 0)
-            return -1;
-
-        int index1 = getHash(value);
-        int index2 = getHash2(value);
-        int index = index1;
-
-        for (int i = 0; i < size; i++) {
-            if (values[index].status != 0) {
-                if (values[index].value == value)
-                    return index;
-            } else {
-                return -1;
-            }
-            index = (index1 + i*index2) % size;
-        }
-        return -1;
-
-    }
-
-
-    void remove(int value) {
-        if (currentSize <= 0)
-            return;
-
-        int key = search(value);
-        if (key != -1) {
-            values[key].status = 2;
-            currentSize--;
-        }
-
-    }
-
-    int getHash(int value) {
-        return abs(value) % size;
-//        return size * (std::abs(value) * 0,618 % 1);
-    }
-    int getHash2(int value) {
-        return abs(value) % (size-1) + 1;
-    }
-
-    void print() {
-        for (int i = 0; i < size; i++) {
-            if (values[i].status == 1)
-                std::cout << i << ": " <<  values[i].value << " ";
-        }
-    }
-};
-
-
-
-int main() {
-//    std::ios::sync_with_stdio(false);
-//    std::cin.tie(nullptr);
-
-    int n;
-    std::cin >> n;
-
-    Hashtable * hashtable = new Hashtable(n);
-
-    for (int i = 0; i < n; i++) {
-        int value;
-        std::cin >> value;
-        hashtable->insert(value);
-    }
-    bool isEqual = true;
-    for (int i = 0; i < n; i++) {
-        int value;
-        std::cin >> value;
-        if (hashtable->search(value) == -1) {
-            isEqual = false;
-//            break;
-        }
-    }
-
-    if (isEqual)
-        std::cout << "YES\n";
-    else
-        std::cout << "NO\n";
-
-//    hashtable->insert(1);
-//    hashtable->insert(1);
-//    hashtable->insert(1);
-//    hashtable->remove(3);
-//
-//    std::cout << hashtable->search(2, 0) << "\n";
-//    std::cout << hashtable->search(3, 0) << "\n";
-//    std::cout << hashtable->search(1, 0) << "\n";
-
-
-//    hashtable->print();
-
-
-    delete hashtable;
-
-    return 0;
-}
-*/
-
-/*#include <iostream>
-#include <vector>
-
-class Data {
-public:
-    int value;
-    int status; // 0 - пуст, 1 - занят, 2 - удален
-
-    Data() {
-        status = 0;
-    }
-    Data(int _value) : Data() {
-        value = _value;
-    }
-};
-
-class Hashtable {
-public:
-    int size;
-    int currentSize;
-    std::vector<Data> values;
+    std::vector<Node *> data;
 
 
     Hashtable() {
@@ -186,93 +41,63 @@ public:
     }
     Hashtable(int _size) : Hashtable() {
         size = _size;
-        values.resize(_size);
+        data.resize(size);
     }
 
-
-    void insert(int value) {
-        if (currentSize >= size)
-            return;
-
-        int index = getHash(value);
-
-        if (values[index].value == value)
-            return;
-
-        if (values[index].status == 0) {
-            values[index].value = value;
-            values[index].status = 1;
-            currentSize++;
-        } else {
-            int tempIndex = index;
-
-            while (values[tempIndex].status != 0) {
-                tempIndex++;
-
-                if (tempIndex >= size)
-                    tempIndex %= size;
-
-            }
-            if (values[tempIndex].status != 1) {
-                values[tempIndex].status = 1;
-                values[tempIndex].value = value;
-                currentSize++;
-            }
-        }
+    void insert(int key, int value) {
+        int index = getHash(key);
+        Node * node = new Node(new Data(key, value));
+        node->next = data[index];
+        data[index] = node;
+        currentSize++;
     }
 
-    int search(int value) {
+    int search(int key) {
         if (currentSize <= 0)
             return -1;
 
-        int index = getHash(value);
-        int tempIndex = index;
+        int index = getHash(key);
 
-        while (values[tempIndex].status != 0) {
-            if (values[tempIndex].status == 1 &&
-                values[tempIndex].value == value) {
-                return tempIndex;
-            }
-
-            tempIndex++;
-
-            if (tempIndex >= size)
-                tempIndex %= size;
+        Node * currentNode = data[index];
+        while (currentNode != nullptr) {
+            if (currentNode->data->key == key)
+                return currentNode->data->value;
+            currentNode = currentNode->next;
         }
 
         return -1;
 
     }
 
-
-    void remove(int value) {
-        if (currentSize <= 0)
-            return;
-
-        int key = search(value);
-        if (key != -1) {
-            values[key].status = 2;
-            currentSize--;
-        }
-
-    }
-
     int getHash(int value) {
-//        return size * (std::abs(value) * 0,618 % 1);
         return abs(value) % size;
     }
-    int getIndex(int index, int step) {
-        return (index + step) % size;
-    }
-    void print() {
-        for (int i = 0; i < size; i++) {
-            if (values[i].status == 1)
-                std::cout << i << ": " <<  values[i].value << " ";
-        }
-    }
+
 };
 
 
+int countPairs(std::vector<int>& values) {
+
+    int n = values.size();
+    int count = 0;
+
+    Hashtable hashTable(2 * n + 1);
+
+    for (int i = 0; i < n; ++i) {
+        int difference = values[i] - i + n;
+
+        int value = hashTable.search(difference);
+        if (value == -1)
+            value++;
+
+        count += value;
+
+
+        hashTable.insert(difference, value + 1);
+    }
+
+    return count;
+}
 
 int main() {
     std::ios::sync_with_stdio(false);
@@ -281,42 +106,14 @@ int main() {
     int n;
     std::cin >> n;
 
-    Hashtable * hashtable = new Hashtable(1000000);
+    std::vector<int> values = std::vector<int>(n);
 
     for (int i = 0; i < n; i++) {
-        int value;
-        std::cin >> value;
-        hashtable->insert(value);
-    }
-    bool isEqual = true;
-    for (int i = 0; i < n; i++) {
-        int value;
-        std::cin >> value;
-        if (hashtable->search(value) == -1) {
-            isEqual = false;
-            break;
-        }
+        std::cin >> values[i];
     }
 
-    if (isEqual)
-        std::cout << "YES\n";
-    else
-        std::cout << "NO\n";
+    std::cout << countPairs(values);
 
-//    hashtable->insert(1);
-//    hashtable->insert(1);
-//    hashtable->insert(1);
-//    hashtable->remove(3);
-//
-//    std::cout << hashtable->search(2, 0) << "\n";
-//    std::cout << hashtable->search(3, 0) << "\n";
-//    std::cout << hashtable->search(1, 0) << "\n";
-
-
-//    hashtable->print();
-
-
-    delete hashtable;
 
     return 0;
-}*/
+}

@@ -475,3 +475,220 @@
 //
 //    return 0;
 //}
+
+
+#include <iostream>
+#include <vector>
+
+class Student {
+public:
+    int isu;
+    int points;
+
+    Student(int _isu, int _points) {
+        isu = _isu;
+        points = _points;
+    }
+};
+
+class Pair {
+public:
+    int key;
+    int status;
+    std::vector<Student> students;
+
+    Pair() {
+        status = 0;
+        students = std::vector<Student>();
+    }
+    Pair(int _key) : Pair() {
+        key = _key;
+    }
+};
+
+class Hashtable {
+public:
+    int size;
+    int currentSize;
+    std::vector<Pair*> groups;
+
+
+    Hashtable() {
+        currentSize = 0;
+    }
+    Hashtable(int _size) : Hashtable() {
+        size = _size;
+        groups = std::vector<Pair*>(size);
+        for (int i = 0; i < size; i++)
+            groups[i] = new Pair();
+
+    }
+
+
+    int insert(int value) {
+        if (currentSize >= size)
+            return -1;
+
+        int index = getHash(value);
+
+        if (groups[index]->key == value)
+            return index;
+
+        if (groups[index]->status == 0) {
+            groups[index]->key = value;
+            groups[index]->status = 1;
+            currentSize++;
+
+            return index;
+        } else {
+            int tempIndex = index;
+
+            while (groups[tempIndex]->status != 0) {
+                tempIndex++;
+
+                if (tempIndex >= size)
+                    tempIndex %= size;
+
+            }
+            if (groups[tempIndex]->status != 1) {
+                groups[tempIndex]->status = 1;
+                groups[tempIndex]->key = value;
+                currentSize++;
+
+                return tempIndex;
+            }
+            return -1;
+        }
+    }
+
+    int search(int value) {
+        if (currentSize <= 0)
+            return -1;
+
+        int index = getHash(value);
+        int tempIndex = index;
+
+        while (groups[tempIndex]->status != 0) {
+            if (groups[tempIndex]->status == 1 &&
+                groups[tempIndex]->key == value) {
+                return tempIndex;
+            }
+
+            tempIndex++;
+
+            if (tempIndex >= size)
+                tempIndex %= size;
+        }
+
+        return -1;
+
+    }
+
+
+    void remove(int value) {
+        if (currentSize <= 0)
+            return;
+
+        int key = search(value);
+        if (key != -1) {
+            groups[key]->status = 2;
+            currentSize--;
+        }
+
+    }
+
+    void addStudent(int group, int isu, int points) {
+        int key = search(group);
+
+        if (key == -1)
+            key = insert(group);
+
+        groups[key]->students.push_back(Student(isu,points));
+
+    }
+
+    void removeStudent(int group, int isu) {
+        int index = getHash(group);
+
+        for (auto it = groups[index]->students.begin(); it != groups[index]->students.end(); it++) {
+            if (it->isu == isu) {
+                groups[index]->students.erase(it);
+                break;
+            }
+        }
+    }
+
+    int getHash(int value) {
+//        return size * (std::abs(value) * 0,618 % 1);
+        return abs(value) % size;
+    }
+
+    int getMaxPointsStudent(int group) {
+        int index = getHash(group);
+        if (groups[index]->students.empty())
+            return 0;
+
+        int maxPoint = INT_MIN;
+        for (const auto & student : groups[index]->students) {
+            maxPoint = std::max(maxPoint, student.points);
+        }
+
+        return maxPoint;
+    }
+    int getAvgPoints(int group) {
+        int index = getHash(group);
+        if (groups[index]->students.empty()) {
+            return 0;
+        }
+        int sum = 0;
+        for (const auto& student : groups[index]->students) {
+            sum += student.points;
+        }
+
+        return sum / groups[index]->students.size();
+    }
+
+};
+
+int main() {
+    std::ios::sync_with_stdio(false);
+    std::cin.tie(nullptr);
+
+
+    int M, Q;
+    std::cin >> M >> Q;
+
+    Hashtable * hashtable = new Hashtable(M);
+
+    for (int i = 0; i < Q; i++) {
+        char command;
+        int group, isu;
+        std::cin >> command >> group;
+
+        switch (command) {
+            case 'a':
+                std::cout << hashtable->getAvgPoints(group) << "\n";
+                break;
+
+            case '-':
+                std::cin >> isu;
+                hashtable->removeStudent(group, isu);
+                break;
+
+            case '+':
+                int points;
+                std::cin >> isu >> points;
+                hashtable->addStudent(group, isu, points);
+
+                break;
+
+            case 'm':
+                std::cout << hashtable->getMaxPointsStudent(group) << "\n";
+                break;
+        }
+    }
+
+    delete hashtable;
+
+    return 0;
+}
