@@ -1,26 +1,17 @@
 #include <iostream>
+#include <vector>
+#include <stack>
 
 class Data {
 public:
-    std::string value;
-    bool indexes[3]{};
-    int count;
+    int value;
+    int points;
     Data() {}
-    Data(std::string _value, int index) : Data() {
+    Data(int _value) : Data() {
         value = _value;
-        count = 1;
-        indexes[index] = true;
     }
-
-    int getMark() {
-        switch (count) {
-            case 1:
-                return 3;
-            case 2:
-                return 1;
-            case 3:
-                return 0;
-        }
+    Data(int _value, int _points) : Data(_value) {
+        points = _points;
     }
 };
 
@@ -50,121 +41,57 @@ public:
     }
 };
 
+class AVLNode : public BasicNode<AVLNode> {
+public:
+    int height;
 
+    AVLNode() : BasicNode<AVLNode>() {
+    }
+
+    AVLNode(Data * _data) : AVLNode() {
+        data = _data;
+        height = 1;
+    }
+};
 class Tree {
 public:
     Node * root;
-
-    template <typename T> T* search(T * currentNode, std::string value) {
-        if (currentNode == nullptr || value == currentNode->data->value)
-            return currentNode;
-        if (value < currentNode->data->value)
-            return search(currentNode->left, value);
-        if (value > currentNode->data->value)
-            return search(currentNode->right, value);
-    }
-
-    template <typename T> T* prev(T * currentNode) {
-        if (currentNode == nullptr) return nullptr;
-
-        if (currentNode->left != nullptr) {
-            return maximum(currentNode->left);
-        }
-        T * parentNode = currentNode->parent;
-
-        while (parentNode != nullptr && currentNode == parentNode->left) {
-            currentNode = parentNode;
-            parentNode = parentNode->parent;
-        }
-        return parentNode;
-    }
-
-    template<typename T> T* findNext(int value, T * currentNode) {
-        if (currentNode == nullptr) {
-            return nullptr;
-        }
-
-        if (currentNode->data->value > value) {
-            T * minNode = findNext(value, currentNode->left);
-            if (minNode != nullptr)
-                return minNode;
-            return currentNode;
-        }
-        if (currentNode->right != nullptr)
-            return findNext(value, currentNode->right);
-        else
-            return nullptr;
-
-    }
-
-    template<typename T> T* findPrev(int value, T* currentNode) {
-        if (currentNode == nullptr)
-            return nullptr;
-
-        if (currentNode->data->value < value) {
-            T * maxNode = findPrev(value,currentNode->right);
-            if (maxNode != nullptr)
-                return maxNode;
-            return currentNode;
-        }
-        if (currentNode->left != nullptr)
-            return findPrev(value, currentNode->left);
-        else
-            return nullptr;
-    }
-
-    template <typename T> T* next(T * currentNode) {
-        if (currentNode == nullptr) return nullptr;
-
-        if (currentNode->right != nullptr) {
-            return minimum(currentNode->right);
-        }
-        T * parentNode = currentNode->parent;
-
-        while (parentNode != nullptr && currentNode == parentNode->right) {
-            currentNode = parentNode;
-            parentNode = parentNode->parent;
-        }
-        return parentNode;
-    }
 
     template <typename T> T* minimum(T * currentNode) {
         return (currentNode->left == nullptr) ? currentNode : minimum(currentNode->left);
     }
 
-    template <typename T> T* maximum(T * currentNode) {
-        return (currentNode->right == nullptr) ? currentNode : maximum(currentNode->right);
-    }
-
-    Node* insert(Node* node, std::string value, int index) {
-        if (node == nullptr)
-            return new Node(new Data(value, index));
-
-        else if (value < node->data->value)
-            node->left = insert(node->left, value, index);
-        else if (value > node->data->value)
-            node->right = insert(node->right, value, index);
-        else if (value == node->data->value) {
-            node->data->count++;
-            node->data->indexes[index] = true;
-        }
-        return node;
-
-    }
-
-    template <typename T> void preorderTrarersal(T * node, int * persons) {
+    template <typename T> void preorderTrarersal(T * node, Data * maxPointsStudent, int& size, long long& sum) {
         if (node != nullptr) {
-
-            for (int i = 0; i < 3; i++) {
-                if (node->data->indexes[i]) {
-                    persons[i] += node->data->getMark();
-                }
+            sum += node->data->points;
+            size++;
+            if (node->data->points > maxPointsStudent->points) {
+                maxPointsStudent->value = node->data->value;
+                maxPointsStudent->points = node->data->points;
             }
-            preorderTrarersal(node->left, persons);
-            preorderTrarersal(node->right, persons);
+
+            preorderTrarersal(node->left, maxPointsStudent, size, sum);
+            preorderTrarersal(node->right, maxPointsStudent, size, sum);
         }
     }
 
+    template <typename T> void inorderTrarersal(T * node) {
+        if (node != nullptr) {
+            inorderTrarersal(node->left);
+            std::cout << node->data->value << ": " << node->data->points << " ";
+            inorderTrarersal(node->right);
+        }
+    }
+
+    template <typename T> void postorderTrarersal(T * node) {
+        if (node != nullptr) {
+            postorderTrarersal(node->left);
+            postorderTrarersal(node->right);
+            std::cout << node->data->value << ": " << node->data->points << " ";
+
+        }
+
+    }
 
     template <typename T> int heightOfTree(T * node) {
         if (node == nullptr)
@@ -185,30 +112,366 @@ public:
     }
 };
 
+class AVLTree : public Tree {
+public:
 
-int main() {
-    int n;
+    AVLNode * root;
 
-    std::cin >> n;
-    Tree * tree = new Tree();
+    int heightOfTree(AVLNode * node) {
+        return (node != nullptr) ? node->height : 0;
+    }
 
-    for (int j = 0; j < 3; j++) {
-        for (int i = 0; i < n; i++) {
-            std::string file;
-            std::cin >> file;
-            tree->root = tree->insert(tree->root,file, j);
+    int bfactor(AVLNode * p) {
+        return heightOfTree(p->right) - heightOfTree(p->left);
+    }
+
+    void fixHeight(AVLNode * node) {
+        int leftHeight = heightOfTree(node->left);
+        int rightHeight = heightOfTree(node->right);
+        node->height = (leftHeight > rightHeight ? leftHeight : rightHeight)+1;
+    }
+
+    AVLNode* rotateLeft(AVLNode * q) {
+        AVLNode * p = q->right;
+
+        q->right = p->left;
+
+        if (q->right != nullptr)
+            q->right->parent = p;
+
+        p->left = q;
+
+        p->parent = q->parent;
+        q->parent = p;
+
+        fixHeight(q);
+        fixHeight(p);
+
+        return p;
+    }
+
+    AVLNode* rotateRight(AVLNode * p) {
+        AVLNode * q = p->left;
+
+        p->left = q->right;
+
+        if (p->left != nullptr)
+            p->left->parent = q;
+
+        q->right = p;
+
+        q->parent = p->parent;
+        p->parent = q;
+
+        fixHeight(p);
+        fixHeight(q);
+
+        return q;
+    }
+
+    AVLNode* balance(AVLNode * p) {
+        fixHeight(p);
+
+        if (bfactor(p) == 2) {
+            if (bfactor(p->right) < 0)
+                p->right = rotateRight(p->right);
+            return rotateLeft(p);
+        }
+
+        if (bfactor(p) == -2) {
+            if (bfactor(p->left) > 0)
+                p->left = rotateLeft(p->left);
+            return rotateRight(p);
+        }
+
+        return p;
+    }
+
+
+    void insert(Data * student, AVLNode* currentNode = nullptr) {
+
+        if (root == nullptr) {
+            root = new AVLNode(student);
+            return;
+        }
+        if (currentNode == nullptr)
+            root = insertNode(student, root);
+        else
+            root = insertNode(student, currentNode);
+    }
+
+    void remove(int value, AVLNode* currentNode = nullptr) {
+        if (currentNode == nullptr)
+            root = removeNode(value, root);
+        else
+            root = removeNode(value, currentNode);
+    }
+
+
+
+private:
+    AVLNode* insertNode(Data * student, AVLNode* currentNode) {
+        if (currentNode == nullptr)
+            return new AVLNode(student);
+        if (student->value < currentNode->data->value) {
+            currentNode->left = insertNode(student, currentNode->left);
+            currentNode->left->parent = currentNode;
+        } else {
+            currentNode->right = insertNode(student,currentNode->right);
+            currentNode->right->parent = currentNode;
+        }
+        return balance(currentNode);
+    }
+
+
+    AVLNode* removeMin(AVLNode* p) {
+        if (p->left == nullptr) {
+            return p->right;
+        }
+        p->left = removeMin(p->left);
+
+        return balance(p);
+    }
+
+    AVLNode* removeNode(int value, AVLNode* p) {
+        if (p == nullptr)
+            return nullptr;
+
+
+        if (value < p->data->value)
+            p->left = removeNode(value, p->left);
+        else if (value > p->data->value)
+            p->right = removeNode(value, p->right);
+        else {
+            AVLNode* q = p->left;
+            AVLNode* r = p->right;
+            if (r == nullptr) {
+                if (q != nullptr)
+                    q->parent = p->parent;
+
+                return q;
+            }
+
+            AVLNode * min = minimum(r);
+            min->right = removeMin(r);
+            min->left = q;
+
+            if (min->parent != nullptr) {
+                min->parent->left = nullptr;
+                min->parent = p->parent;
+            }
+
+            delete p;
+
+            if (q != nullptr)
+                q->parent = min;
+
+            return balance(min);
+        }
+
+        return balance(p);
+    }
+};
+
+class Pair {
+public:
+    int key;
+    int status;
+    AVLTree * group;
+
+    Pair() {
+        status = 0;
+        group = new AVLTree();
+    }
+    Pair(int _key) : Pair() {
+        key = _key;
+    }
+};
+
+class Hashtable {
+public:
+    int size;
+    int currentSize;
+    std::vector<Pair*> values;
+
+
+    Hashtable() {
+        currentSize = 0;
+    }
+    Hashtable(int _size) : Hashtable() {
+        size = _size;
+        values = std::vector<Pair*>(size);
+        for (int i = 0; i < size; i++)
+            values[i] = new Pair();
+
+    }
+
+
+    int insert(int value) {
+        if (currentSize >= size)
+            return -1;
+
+        int index = getHash(value);
+
+        if (values[index]->key == value)
+            return index;
+
+        if (values[index]->status == 0) {
+            values[index]->key = value;
+            values[index]->status = 1;
+            currentSize++;
+
+            return index;
+        } else {
+            int tempIndex = index;
+
+            while (values[tempIndex]->status != 0) {
+                tempIndex++;
+
+                if (tempIndex >= size)
+                    tempIndex %= size;
+
+            }
+            if (values[tempIndex]->status != 1) {
+                values[tempIndex]->status = 1;
+                values[tempIndex]->key = value;
+                currentSize++;
+
+                return tempIndex;
+            }
+            return -1;
         }
     }
-    int persons[3] = {0};
 
-    tree->preorderTrarersal(tree->root, persons);
+    int search(int value) {
+        if (currentSize <= 0)
+            return -1;
 
-    for (int i = 0; i < 3; i++) {
-        std::cout << persons[i] << " ";
+        int index = getHash(value);
+        int tempIndex = index;
+
+        while (values[tempIndex]->status != 0) {
+            if (values[tempIndex]->status == 1 &&
+                values[tempIndex]->key == value) {
+                return tempIndex;
+            }
+
+            tempIndex++;
+
+            if (tempIndex >= size)
+                tempIndex %= size;
+        }
+
+        return -1;
+
     }
 
-    std::cout << "\n";
-    delete tree;
+
+    void remove(int value) {
+        if (currentSize <= 0)
+            return;
+
+        int key = search(value);
+        if (key != -1) {
+            values[key]->status = 2;
+            currentSize--;
+        }
+
+    }
+
+    void addStudent(int group, int isu, int points) {
+        int key = search(group);
+
+        if (key == -1)
+            key = insert(group);
+
+        values[key]->group->insert(new Data(isu,points));
+
+    }
+
+    void removeStudent(int group, int isu) {
+
+
+        int key = search(group);
+        if (key != -1) {
+            values[key]->group->remove(isu, values[key]->group->root);
+        }
+    }
+
+    int getHash(int value) {
+//        return size * (std::abs(value) * 0,618 % 1);
+        return abs(value) % size;
+    }
+
+    void getMaxPointsStudent(int group) {
+        int key = search(group);
+        if (key != -1) {
+            long long sum = 0;
+            Data * student = new Data(0, INT_MIN);
+            int sizeOfTree = 0;
+            values[key]->group->preorderTrarersal(values[key]->group->root, student, sizeOfTree, sum);
+
+            std::cout << student->points << "\n";
+
+
+        }else
+            std::cout << 0 << "\n";
+    }
+    void getAvgPoints(int group) {
+        int key = search(group);
+        if (key != -1) {
+            long long sum = 0;
+            Data * student = new Data(0, INT_MIN);
+            int sizeOfTree = 0;
+            values[key]->group->preorderTrarersal(values[key]->group->root, student, sizeOfTree, sum);
+
+            long long avg = sum/sizeOfTree;
+            std::cout << avg << "\n";
+        } else
+            std::cout << 0 << "\n";
+
+    }
+
+};
+
+int main() {
+    std::ios::sync_with_stdio(false);
+    std::cin.tie(nullptr);
+
+    Hashtable * hashtable = new Hashtable(10000);
+
+    int M, Q;
+    std::cin >> M >> Q;
+
+    for (int i = 0; i < Q; i++) {
+        char command;
+        int group, isu;
+        std::cin >> command >> group;
+
+        switch (command) {
+            case 'a':
+                hashtable->getAvgPoints(group);
+                break;
+
+            case '-':
+                std::cin >> isu;
+                hashtable->removeStudent(group, isu);
+                break;
+
+            case '+':
+                int points;
+                std::cin >> isu >> points;
+                hashtable->addStudent(group, isu, points);
+
+                break;
+
+            case 'm':
+                hashtable->getMaxPointsStudent(group);
+                break;
+        }
+    }
+
+    delete hashtable;
 
     return 0;
 }

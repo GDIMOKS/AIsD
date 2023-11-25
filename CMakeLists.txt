@@ -13,4 +13,6 @@ add_executable(AIsD main.cpp
         lab4/lab4.C.cpp
         lab4/lab4.E.cpp
         lab4/lab4.D.cpp
-        lab4/lab4.H.cpp)
+        lab4/lab4.H.cpp
+        lab5/lab5.E.cpp
+        lab5/lab5.D.cpp)
