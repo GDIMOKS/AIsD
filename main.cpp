@@ -1,131 +1,118 @@
+#include <vector>
+#include <queue>
 #include "iostream"
-#include "vector"
+/*
+class Data {
+public:
+    int value;
+};*/
 
 class Node {
 public:
-    int value;
-    int status; // 0 - пуст, 1 - занят, 2 - удален
-    bool checked;
+/*
+    Data * data;
+*/
+    std::vector<int> children;
+    bool isVisited;
 
     Node() {
-        status = 0;
-        checked = false;
-    }
-    Node(int _value) : Node() {
-        value = _value;
+        isVisited = false;
+/*
+        children = std::vector<int>();
+*/
     }
 };
 
-class Hashtable {
+class Graph {
+// BFS, DFS
+// МАТРИЦА СМЕЖНОСТИ N*N
+// СПИСОК СМЕЖНОСТИ
+// МАТРИЦА ИНЦИДЕНТНОСТИ (СТОЛБЦЫ - ВЕРШИНЫ, СТРОКИ - РЕБРА)
+
 public:
+    std::vector<Node*> nodes;
 
+    Graph() {
 
-    std::vector<Node*> values;
-    int size;
-    int currentSize;
-
-    Hashtable() {
-        currentSize = 0;
     }
 
-    Hashtable(int _size) : Hashtable() {
-        size = _size;
-        values = std::vector<Node*>(size);
-        for (int i = 0; i < values.size(); i++) {
-            values[i] = new Node();
+    Graph(int size) {
+        nodes = std::vector<Node *>(size);
+        for (auto & node : nodes) {
+            node = new Node();
         }
-    };
-
-    int getHash(int key) {
-        return key % size;
     }
 
+    bool DFS() {
 
+    }
 
+    bool BFS(int startNode, int goalNode) {
+        std::queue<int> queue;
 
-    void insert(int value) {
+/*        for (int i = 0; i < nodes.size(); i++) {
+            visited[i] = false;
+        }*/
 
-        int index = getHash(value);
+        queue.push(startNode);
+        while (!queue.empty()) {
+            int currentNode = queue.front();
+            queue.pop();
 
+            if (currentNode == goalNode)
+                return true;
+            nodes[currentNode]->isVisited = true;
 
-        if (values[index]->status == 0) {
-            values[index]->value = value;
-            values[index]->status = 1;
-            currentSize++;
-        } else {
-            int tempIndex = index;
-
-            while (values[tempIndex]->status != 0) {
-                tempIndex++;
-
-                if (tempIndex >= size)
-                    tempIndex %= size;
-
-            }
-            if (values[tempIndex]->status != 1) {
-                values[tempIndex]->status = 1;
-                values[tempIndex]->value = value;
-                currentSize++;
+            for (auto& child : nodes[currentNode]->children) {
+                if (!nodes[child]->isVisited) {
+                    queue.push(child);
+                    nodes[child]->isVisited = true;
+                }
             }
         }
+
+        return false;
     }
 
-    Node* search(int value) {
+    void Print() {
+        for (int i = 0; i < nodes.size(); i++) {
+/*            if (nodes[i]->children.empty())
+                continue;*/
 
-        int index = getHash(value);
-
-        while (values[index]->status != 0) {
-            if (!values[index]->checked && values[index]->value == value)
-                return values[index];
-
-            index++;
-
-            if (index >= size)
-                index %= size;
+            std::cout << i+1 << ": ";
+            for (int j = 0; j < nodes[i]->children.size(); j++) {
+                std::cout << nodes[i]->children[j]+1 << " ";
+            }
+            std::cout << "\n";
         }
-
-        return nullptr;
     }
+
 };
-
-
 
 int main() {
     std::ios::sync_with_stdio(false);
     std::cin.tie(nullptr);
 
-    int N;
-    std::cin >> N;
-    int count = 0;
+    int N, M;
+    std::cin >> N >> M;
 
-    auto xHashTable = new Hashtable(N);
-    auto yHashTable = new Hashtable(N);
+    Graph * graph = new Graph(N);
 
-    int * x = new int[N];
-    int * y = new int[N];
+    for (int i = 0; i < M; i++) {
+        int u, v;
 
-    for (int i = 0; i < N; i++) {
-        std::cin >> x[i];
-        std::cin >> y[i];
+        std::cin >> u >> v;
 
-        if (xHashTable->search(x[i]) || yHashTable->search(y[i]))
-            continue;
-
-        xHashTable->insert(x[i]);
-        yHashTable->insert(y[i]);
-        count++;
-
-        if (count > 3)
-            break;
+        graph->nodes[u-1]->children.push_back(v-1);
+        graph->nodes[v-1]->children.push_back(u-1);
     }
 
-    if (count == 3)
-        std::cout << "YES";
-    else
-        std::cout << "NO";
+    graph->Print();
 
-    delete [] x;
-    delete [] y;
-    delete xHashTable;
-    delete yHashTable;
+    /*if (graph->BFS(0,0))
+        std::cout << "YES\n";
+    else
+        std::cout << "NO\n";*/
+
+    delete graph;
 }
