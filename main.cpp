@@ -1,33 +1,23 @@
 #include <vector>
-#include <queue>
+#include <algorithm>
 #include "iostream"
-/*
-class Data {
-public:
-    int value;
-};*/
+
+
 
 class Node {
 public:
-/*
-    Data * data;
-*/
+
     std::vector<int> children;
-    bool isVisited;
+    std::string color;
+    int parent;
 
     Node() {
-        isVisited = false;
-/*
-        children = std::vector<int>();
-*/
+        color = "white";
+        parent = -1;
     }
 };
 
 class Graph {
-// BFS, DFS
-// МАТРИЦА СМЕЖНОСТИ N*N
-// СПИСОК СМЕЖНОСТИ
-// МАТРИЦА ИНЦИДЕНТНОСТИ (СТОЛБЦЫ - ВЕРШИНЫ, СТРОКИ - РЕБРА)
 
 public:
     std::vector<Node*> nodes;
@@ -43,41 +33,40 @@ public:
         }
     }
 
-    bool DFS() {
-
+    std::vector<int> getCycle(int last) {
+        std::vector<int> cycle = {last};
+        for (int i = nodes[last]->parent; i != last; i = nodes[i]->parent) {
+            cycle.push_back(i);
+        }
+        std::reverse(cycle.begin(), cycle.end());
+        return cycle;
     }
 
-    bool BFS(int startNode, int goalNode) {
-        std::queue<int> queue;
+    void dfs(int current, std::vector<int> &cycle) {
+        nodes[current]->color = "grey";
 
-/*        for (int i = 0; i < nodes.size(); i++) {
-            visited[i] = false;
-        }*/
+        for (auto & child : nodes[current]->children){
 
-        queue.push(startNode);
-        while (!queue.empty()) {
-            int currentNode = queue.front();
-            queue.pop();
+            if (nodes[child]->color == "white") {
+                nodes[child]->parent = current;
 
-            if (currentNode == goalNode)
-                return true;
-            nodes[currentNode]->isVisited = true;
-
-            for (auto& child : nodes[currentNode]->children) {
-                if (!nodes[child]->isVisited) {
-                    queue.push(child);
-                    nodes[child]->isVisited = true;
-                }
+                dfs(child, cycle);
+                if (!cycle.empty())
+                    return;
+            } else if (nodes[child]->color == "grey") {
+                nodes[child]->parent = current;
+                cycle = getCycle(child);
+                return;
             }
         }
 
-        return false;
+        nodes[current]->color = "black";
+
     }
 
-    void Print() {
+
+    void print() {
         for (int i = 0; i < nodes.size(); i++) {
-/*            if (nodes[i]->children.empty())
-                continue;*/
 
             std::cout << i+1 << ": ";
             for (int j = 0; j < nodes[i]->children.size(); j++) {
@@ -89,13 +78,13 @@ public:
 
 };
 
+
 int main() {
     std::ios::sync_with_stdio(false);
     std::cin.tie(nullptr);
 
-    int N, M;
-    std::cin >> N >> M;
-
+    int N, M, Q;
+    std::cin >> N >> M >> Q;
     Graph * graph = new Graph(N);
 
     for (int i = 0; i < M; i++) {
@@ -104,15 +93,22 @@ int main() {
         std::cin >> u >> v;
 
         graph->nodes[u-1]->children.push_back(v-1);
-        graph->nodes[v-1]->children.push_back(u-1);
+
     }
 
-    graph->Print();
+    while (Q--) {
+        int A,B;
+        std::cin >> A >> B;
 
-    /*if (graph->BFS(0,0))
-        std::cout << "YES\n";
-    else
-        std::cout << "NO\n";*/
-
+        std::vector<int> cycle;
+        A--;
+        B--;
+        graph->dfs(A, cycle);
+        if (std::find(cycle.begin(), cycle.end(), B) != cycle.end())
+            std::cout << "YES\n";
+        else
+            std::cout << "NO\n";
+    }
     delete graph;
+
 }
