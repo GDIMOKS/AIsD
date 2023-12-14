@@ -77,7 +77,7 @@ struct Heap {
         for (int i = 0; i < heap1->size; i++) {
             insert(heap1->values[i]);
         }
-        for (int i = 0, j = size; i < heap2->size; i++) {
+        for (int i = 0; i < heap2->size; i++) {
             insert(heap2->values[i]);
 
         }
