@@ -1,0 +1,12 @@
+# ninja log v5
+53	716	7208020987088407	CMakeFiles/AIsD.dir/lab3/lab3.B.cpp.obj	fb2f419fd293e7b6
+5	210	7200021648780481	CMakeFiles/AIsD.dir/lab3/lab3.A.cpp.obj	6884fdb95b0985d5
+7	64	7200064484655043	CMakeFiles/AIsD.dir/lab3/lab3.E.cpp.obj	a26956a00fd8dbf3
+4	67	7208021532476527	CMakeFiles/AIsD.dir/lab3/lab3.C.cpp.obj	ddf79c7279679f7e
+4	501	7214865316652237	CMakeFiles/AIsD.dir/main.cpp.obj	7081c35f7514e21a
+502	677	7214865318332219	AIsD.exe	19f63f286fac4e20
+9	103	7214634280766698	CMakeFiles/AIsD.dir/lab4/lab4.A.cpp.obj	4ea9a08b95e0cf64
+11	96	7214634280706694	CMakeFiles/AIsD.dir/lab4/lab4.B.cpp.obj	2a1787f49976108e
+8	75	7214815932337238	CMakeFiles/AIsD.dir/lab4/lab4.C.cpp.obj	bd44d3aaf1b8a706
+4	61	7214806794315667	CMakeFiles/AIsD.dir/lab4/lab4.E.cpp.obj	1b28c889dcc22c6d
+10	104	7214803642267466	CMakeFiles/AIsD.dir/lab4/lab4.D.cpp.obj	65358305dfb6f85e

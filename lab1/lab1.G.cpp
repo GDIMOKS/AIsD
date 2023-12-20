@@ -1,4 +1,3 @@
-/*
 #include <iostream>
 
 struct ExpertRequirement {
@@ -100,4 +99,3 @@ int main() {
 
 
 
-*/
